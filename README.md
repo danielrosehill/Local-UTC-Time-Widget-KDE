@@ -4,6 +4,12 @@ A compact dual-clock plasmoid that shows your local time alongside UTC (Zulu) â€
 
 ![preview](preview.png)
 
+![widget on desktop](screenshots/widget-desktop.png)
+
+### Settings
+
+![settings panel](screenshots/settings.png)
+
 ## Features
 
 - Side-by-side local + UTC clocks
