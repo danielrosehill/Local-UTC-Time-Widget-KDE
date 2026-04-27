@@ -11,6 +11,8 @@ Kirigami.FormLayout {
     property alias cfg_localLabel: localLabel.text
     property alias cfg_utcLabel: utcLabel.text
     property alias cfg_autoLocalLabel: autoLocalLabel.checked
+    property alias cfg_localOnRight: localOnRight.checked
+    property alias cfg_showDivider: showDivider.checked
     property string cfg_labelPosition
     property alias cfg_showUtcOffset: showUtcOffset.checked
     property alias cfg_showSeconds: showSeconds.checked
@@ -28,6 +30,11 @@ Kirigami.FormLayout {
 
     CheckBox { id: use24Hour; Kirigami.FormData.label: i18n("Time format:"); text: i18n("24-hour") }
     CheckBox { id: showSeconds; text: i18n("Show seconds") }
+
+    Item { Kirigami.FormData.isSection: true }
+
+    CheckBox { id: localOnRight; Kirigami.FormData.label: i18n("Layout:"); text: i18n("Local clock on the right (UTC on left)") }
+    CheckBox { id: showDivider; text: i18n("Show vertical divider between clocks") }
 
     Item { Kirigami.FormData.isSection: true }
 

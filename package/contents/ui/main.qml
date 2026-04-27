@@ -27,6 +27,11 @@ PlasmoidItem {
     }
 
     function localTzAbbrev() {
+        try {
+            const parts = new Intl.DateTimeFormat(undefined, { timeZoneName: "short" }).formatToParts(nowLocal);
+            const tz = parts.find(p => p.type === "timeZoneName");
+            if (tz && tz.value && !/^GMT/i.test(tz.value)) return tz.value;
+        } catch (e) {}
         const s = nowLocal.toString();
         const m = s.match(/\(([^)]+)\)$/);
         if (m) {
@@ -34,8 +39,7 @@ PlasmoidItem {
             if (parts.length > 1) return parts.map(p => p[0]).join("");
             return m[1];
         }
-        const m2 = s.match(/\s([A-Z]{2,5})(?:[+\-]\d|\s|$)/);
-        return m2 ? m2[1] : "LOC";
+        return utcOffsetString();
     }
 
     function utcOffsetString() {
@@ -99,8 +103,10 @@ PlasmoidItem {
             spacing: 2
 
             RowLayout {
+                id: clocksRow
                 spacing: Plasmoid.configuration.spacing
                 Layout.alignment: Qt.AlignHCenter
+                layoutDirection: Plasmoid.configuration.localOnRight ? Qt.RightToLeft : Qt.LeftToRight
 
                 // LOCAL block
                 ColumnLayout {
@@ -138,6 +144,17 @@ PlasmoidItem {
                         font.pixelSize: rootItem.fsLabel
                         font.bold: Plasmoid.configuration.bold
                     }
+                }
+
+                // Divider
+                Rectangle {
+                    visible: Plasmoid.configuration.showDivider
+                    Layout.preferredWidth: 1
+                    Layout.fillHeight: true
+                    Layout.topMargin: 2
+                    Layout.bottomMargin: 2
+                    color: rootItem.lColor
+                    opacity: 0.35
                 }
 
                 // UTC block

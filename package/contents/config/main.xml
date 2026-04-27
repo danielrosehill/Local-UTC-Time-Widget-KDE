@@ -14,6 +14,12 @@
             <default>UTC</default>
         </entry>
         <entry name="autoLocalLabel" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="localOnRight" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="showDivider" type="Bool">
             <default>true</default>
         </entry>
         <entry name="labelPosition" type="String">
