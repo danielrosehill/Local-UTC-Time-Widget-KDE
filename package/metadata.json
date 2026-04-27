@@ -1,0 +1,20 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "public@danielrosehill.com",
+                "Name": "Daniel Rosehill"
+            }
+        ],
+        "Category": "Date and Time",
+        "Description": "Compact dual-clock showing local time and UTC (Zulu), with configurable labels, font, color, and date display.",
+        "Icon": "clock",
+        "Id": "com.danielrosehill.localutctime",
+        "License": "MIT",
+        "Name": "Local + UTC Time",
+        "Version": "1.0.0",
+        "Website": "https://github.com/danielrosehill/Local-UTC-Time-Widget-KDE"
+    },
+    "KPackageStructure": "Plasma/Applet",
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
