@@ -17,7 +17,13 @@ A compact dual-clock plasmoid that shows your local time alongside UTC (Zulu) â€
 
 ## Install
 
-### From this repo
+### From the prebuilt .plasmoid
+
+```bash
+kpackagetool6 -t Plasma/Applet --install local-utc-time-widget.plasmoid
+```
+
+### From source
 
 ```bash
 git clone https://github.com/danielrosehill/Local-UTC-Time-Widget-KDE.git
