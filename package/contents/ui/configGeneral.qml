@@ -17,9 +17,11 @@ Kirigami.FormLayout {
     property alias cfg_showUtcOffset: showUtcOffset.checked
     property alias cfg_showSeconds: showSeconds.checked
     property alias cfg_use24Hour: use24Hour.checked
-    property alias cfg_showDate: showDate.checked
-    property string cfg_dateFormat
+    property alias cfg_showDateBox: showDateBox.checked
+    property alias cfg_dateBoxUseUtc: dateBoxUseUtc.checked
+    property string cfg_dateBoxLayout
     property string cfg_fontFamily
+    property string cfg_labelFontFamily
     property alias cfg_fontSize: fontSize.value
     property alias cfg_bold: bold.checked
     property alias cfg_customColor: customColor.checked
@@ -61,30 +63,26 @@ Kirigami.FormLayout {
 
     Item { Kirigami.FormData.isSection: true }
 
-    CheckBox { id: showDate; Kirigami.FormData.label: i18n("Date:"); text: i18n("Show date") }
+    CheckBox { id: showDateBox; Kirigami.FormData.label: i18n("Date:"); text: i18n("Show date") }
+    CheckBox { id: dateBoxUseUtc; text: i18n("Use UTC (otherwise local time zone)"); enabled: showDateBox.checked }
     ComboBox {
-        id: dateFmtCombo
-        Kirigami.FormData.label: i18n("Date format:")
-        enabled: showDate.checked
+        id: dateBoxLayoutCombo
+        Kirigami.FormData.label: i18n("Date layout:")
+        enabled: showDateBox.checked
         model: [
-            { text: i18n("Short weekday + date (Thurs, Feb 9)"), value: "weekday-short-date" },
-            { text: i18n("Weekday only (Thursday)"), value: "weekday" },
-            { text: i18n("Short weekday only (Thurs)"), value: "weekday-short" },
-            { text: i18n("Full (Thursday, Feb 9, 2026)"), value: "full" }
+            { text: i18n("Weekday above date"), value: "weekday-top" },
+            { text: i18n("Date above weekday"), value: "date-top" }
         ]
         textRole: "text"
         valueRole: "value"
-        currentIndex: {
-            for (let i = 0; i < model.length; i++) if (model[i].value === cfg_dateFormat) return i;
-            return 0;
-        }
-        onActivated: cfg_dateFormat = model[currentIndex].value
+        currentIndex: cfg_dateBoxLayout === "date-top" ? 1 : 0
+        onActivated: cfg_dateBoxLayout = model[currentIndex].value
     }
 
     Item { Kirigami.FormData.isSection: true }
 
     RowLayout {
-        Kirigami.FormData.label: i18n("Font:")
+        Kirigami.FormData.label: i18n("Bold font:")
         TextField {
             id: fontFamilyField
             Layout.preferredWidth: 200
@@ -102,6 +100,27 @@ Kirigami.FormLayout {
         onAccepted: {
             cfg_fontFamily = selectedFont.family
             fontFamilyField.text = selectedFont.family
+        }
+    }
+    RowLayout {
+        Kirigami.FormData.label: i18n("Label font:")
+        TextField {
+            id: labelFontFamilyField
+            Layout.preferredWidth: 200
+            text: cfg_labelFontFamily
+            placeholderText: i18n("Same as bold font")
+            onTextChanged: cfg_labelFontFamily = text
+        }
+        Button {
+            text: i18n("Pick…")
+            onClicked: labelFontDlg.open()
+        }
+    }
+    FontDialog {
+        id: labelFontDlg
+        onAccepted: {
+            cfg_labelFontFamily = selectedFont.family
+            labelFontFamilyField.text = selectedFont.family
         }
     }
     SpinBox { id: fontSize; Kirigami.FormData.label: i18n("Font size (px):"); from: 0; to: 96; stepSize: 1 }

@@ -51,6 +51,17 @@ PlasmoidItem {
         return "UTC" + sign + h + (m ? ":" + m.toString().padStart(2, "0") : "");
     }
 
+    function dateBoxWeekday(d, utc) {
+        const wd = utc ? d.getUTCDay() : d.getDay();
+        return ["Sun","Mon","Tues","Wed","Thurs","Fri","Sat"][wd];
+    }
+
+    function dateBoxMonthDay(d, utc) {
+        const mo = utc ? d.getUTCMonth() : d.getMonth();
+        const day = utc ? d.getUTCDate() : d.getDate();
+        return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][mo] + " " + day;
+    }
+
     function fmtDate(d) {
         const wdLong = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()];
         const wdShort = ["Sun","Mon","Tues","Wed","Thurs","Fri","Sat"][d.getDay()];
@@ -92,6 +103,7 @@ PlasmoidItem {
             ? Plasmoid.configuration.labelColor
             : Qt.darker(tColor, 1.3)
         readonly property string ff: Plasmoid.configuration.fontFamily || Kirigami.Theme.defaultFont.family
+        readonly property string lff: Plasmoid.configuration.labelFontFamily || ff
         readonly property int fsTime: Plasmoid.configuration.fontSize > 0
             ? Plasmoid.configuration.fontSize
             : Kirigami.Theme.defaultFont.pixelSize + 2
@@ -127,9 +139,9 @@ PlasmoidItem {
                             visible: Plasmoid.configuration.showLabels && !labelsBelow
                             text: Plasmoid.configuration.autoLocalLabel ? localTzAbbrev() : Plasmoid.configuration.localLabel
                             color: rootItem.lColor
-                            font.family: rootItem.ff
+                            font.family: rootItem.lff
                             font.pixelSize: rootItem.fsLabel
-                            font.bold: Plasmoid.configuration.bold
+                            font.bold: false
                         }
                     }
                     Text {
@@ -140,9 +152,9 @@ PlasmoidItem {
                             return Plasmoid.configuration.showUtcOffset ? lbl + " (" + utcOffsetString() + ")" : lbl;
                         }
                         color: rootItem.lColor
-                        font.family: rootItem.ff
+                        font.family: rootItem.lff
                         font.pixelSize: rootItem.fsLabel
-                        font.bold: Plasmoid.configuration.bold
+                        font.bold: false
                     }
                 }
 
@@ -176,9 +188,9 @@ PlasmoidItem {
                             visible: Plasmoid.configuration.showLabels && !labelsBelow
                             text: Plasmoid.configuration.utcLabel
                             color: rootItem.lColor
-                            font.family: rootItem.ff
+                            font.family: rootItem.lff
                             font.pixelSize: rootItem.fsLabel
-                            font.bold: Plasmoid.configuration.bold
+                            font.bold: false
                         }
                     }
                     Text {
@@ -186,22 +198,55 @@ PlasmoidItem {
                         Layout.alignment: Qt.AlignHCenter
                         text: Plasmoid.configuration.utcLabel
                         color: rootItem.lColor
-                        font.family: rootItem.ff
+                        font.family: rootItem.lff
                         font.pixelSize: rootItem.fsLabel
-                        font.bold: Plasmoid.configuration.bold
+                        font.bold: false
+                    }
+                }
+
+                // Divider before date box
+                Rectangle {
+                    visible: Plasmoid.configuration.showDateBox && Plasmoid.configuration.showDivider
+                    Layout.preferredWidth: 1
+                    Layout.fillHeight: true
+                    Layout.topMargin: 2
+                    Layout.bottomMargin: 2
+                    color: rootItem.lColor
+                    opacity: 0.35
+                }
+
+                // Date box
+                ColumnLayout {
+                    id: dateBox
+                    visible: Plasmoid.configuration.showDateBox
+                    spacing: 0
+                    Layout.alignment: Qt.AlignVCenter
+
+                    readonly property bool weekdayTop: Plasmoid.configuration.dateBoxLayout !== "date-top"
+                    readonly property var dbDate: Plasmoid.configuration.dateBoxUseUtc ? nowUtc : nowLocal
+                    readonly property bool dbUtc: Plasmoid.configuration.dateBoxUseUtc
+                    readonly property string weekdayStr: dateBoxWeekday(dbDate, dbUtc)
+                    readonly property string monthDayStr: dateBoxMonthDay(dbDate, dbUtc)
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: dateBox.weekdayTop ? dateBox.weekdayStr : dateBox.monthDayStr
+                        color: rootItem.tColor
+                        font.family: dateBox.weekdayTop ? rootItem.ff : rootItem.lff
+                        font.pixelSize: rootItem.fsLabel
+                        font.bold: dateBox.weekdayTop ? Plasmoid.configuration.bold : false
+                    }
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: dateBox.weekdayTop ? dateBox.monthDayStr : dateBox.weekdayStr
+                        color: rootItem.tColor
+                        font.family: dateBox.weekdayTop ? rootItem.lff : rootItem.ff
+                        font.pixelSize: rootItem.fsLabel
+                        font.bold: dateBox.weekdayTop ? false : Plasmoid.configuration.bold
                     }
                 }
             }
 
-            Text {
-                visible: Plasmoid.configuration.showDate
-                Layout.alignment: Qt.AlignHCenter
-                text: fmtDate(nowLocal)
-                color: rootItem.lColor
-                font.family: rootItem.ff
-                font.pixelSize: rootItem.fsLabel
-                font.bold: Plasmoid.configuration.bold
-            }
         }
     }
 }
