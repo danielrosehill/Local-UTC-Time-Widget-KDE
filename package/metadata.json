@@ -12,7 +12,7 @@
         "Id": "com.danielrosehill.localutctime",
         "License": "MIT",
         "Name": "Local + UTC Time",
-        "Version": "1.0.0",
+        "Version": "1.1.0",
         "Website": "https://github.com/danielrosehill/Local-UTC-Time-Widget-KDE"
     },
     "KPackageStructure": "Plasma/Applet",

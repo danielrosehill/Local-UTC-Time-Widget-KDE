@@ -1,10 +1,16 @@
 # Local + UTC Time Widget for KDE Plasma 6
 
-A compact dual-clock plasmoid that shows your local time alongside UTC (Zulu) — handy for ops, aviation, comms with remote teams, or anyone who works against UTC.
+A modular Plasma 6 desktop widget that renders time, date, and (optionally) Hebrew date as side-by-side cards — handy for ops, aviation, comms with remote teams, or anyone who works against UTC. Also rolls in Hebrew calendar display, replacing the standalone `Hebrew-Date-KDE-Widget`.
 
 ![preview](preview.png)
 
+### Default layout (local + UTC + date)
+
 ![widget on desktop](screenshots/widget-desktop.png)
+
+### With Hebrew date card enabled
+
+![widget with hebrew card](screenshots/widget-with-hebrew.png)
 
 ### Settings
 
@@ -12,14 +18,15 @@ A compact dual-clock plasmoid that shows your local time alongside UTC (Zulu) �
 
 ## Features
 
-- Side-by-side local + UTC clocks
+- Modular cards: enable/disable and reorder local time, UTC time, date, and Hebrew date independently
 - Optional timezone labels (auto-detected local abbreviation, or custom strings)
 - Label position: underneath the time (default) or inline after it
 - Optional UTC offset display next to the local label
 - 12 / 24-hour format, optional seconds
-- Optional date line below (`Thurs, Feb 9` style or weekday-only)
+- Date card layouts: single line or two lines (`Thurs / Apr 30`), long or short month names
+- Hebrew date: day + month (`Iyyar 13`), with optional Hebrew year
 - Custom font family, size, bold, and colors for time and labels
-- Adjustable gap between the two clocks
+- Adjustable gap between cards
 
 ## Install
 

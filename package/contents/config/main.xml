@@ -23,7 +23,6 @@
             <default>true</default>
         </entry>
         <entry name="labelPosition" type="String">
-            <!-- "below" or "inline" -->
             <default>below</default>
         </entry>
         <entry name="showUtcOffset" type="Bool">
@@ -35,11 +34,7 @@
         <entry name="use24Hour" type="Bool">
             <default>true</default>
         </entry>
-        <entry name="showDate" type="Bool">
-            <default>false</default>
-        </entry>
         <entry name="dateFormat" type="String">
-            <!-- "weekday-short-date" e.g. Thurs, Feb 9 ; "weekday" ; "full" -->
             <default>weekday-short-date</default>
         </entry>
         <entry name="showDateBox" type="Bool">
@@ -49,35 +44,47 @@
             <default>false</default>
         </entry>
         <entry name="dateBoxLayout" type="String">
-            <!-- "weekday-top" or "date-top" -->
             <default>weekday-top</default>
-        </entry>
-        <entry name="fontFamily" type="String">
-            <default></default>
-        </entry>
-        <entry name="labelFontFamily" type="String">
-            <default></default>
-        </entry>
-        <entry name="fontSize" type="Int">
-            <default>0</default>
-        </entry>
-        <entry name="bold" type="Bool">
-            <default>true</default>
-        </entry>
-        <entry name="customColor" type="Bool">
-            <default>false</default>
-        </entry>
-        <entry name="textColor" type="String">
-            <default>#ffffff</default>
-        </entry>
-        <entry name="labelColor" type="String">
-            <default>#bbbbbb</default>
-        </entry>
-        <entry name="customLabelColor" type="Bool">
-            <default>false</default>
         </entry>
         <entry name="spacing" type="Int">
             <default>10</default>
+        </entry>
+        <entry name="desktopPalette" type="String">
+            <!-- auto, light, dark, slate, warm, midnight -->
+            <default>light</default>
+        </entry>
+        <entry name="desktopCards" type="Bool">
+            <default>true</default>
+        </entry>
+        <entry name="desktopOrientation" type="String">
+            <!-- horizontal or vertical -->
+            <default>horizontal</default>
+        </entry>
+        <entry name="desktopShowContainer" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="gregorianDateStyle" type="String">
+            <!-- two-line, single-line -->
+            <default>two-line</default>
+        </entry>
+        <entry name="showHebrewDate" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="hebrewDateWithYear" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="hebrewMonthFirst" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="cardOrder" type="String">
+            <!-- Comma-separated list of block kinds, in display order.
+                 Available: local-time, utc-time, date-combined,
+                 weekday, gregorian-date, month, day,
+                 hebrew-combined, hebrew-day, hebrew-month, hebrew-year -->
+            <default>local-time,utc-time,weekday,day,hebrew-day-month</default>
+        </entry>
+        <entry name="monthLong" type="Bool">
+            <default>false</default>
         </entry>
     </group>
 </kcfg>
