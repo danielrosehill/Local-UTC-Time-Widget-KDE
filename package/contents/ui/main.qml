@@ -244,18 +244,19 @@ PlasmoidItem {
 
     // Resolve a configured time-color preset to an actual color, given a
     // fallback (theme/palette default). "muted" darkens the fallback.
-    function resolveTimeColor(name, fallback) {
+    function resolveTimeColor(name, fallback, customHex) {
         switch (name) {
             case "white":  return "#FFFFFF";
             case "yellow": return "#F2C94C";
             case "muted":  return Qt.rgba(fallback.r, fallback.g, fallback.b, 0.85);
+            case "custom": return (customHex && customHex.length > 0) ? customHex : fallback;
             case "default":
             default:       return fallback;
         }
     }
     function timeColorFor(kind, fallback) {
-        if (kind === "local-time") return resolveTimeColor(Plasmoid.configuration.localTimeColor, fallback);
-        if (kind === "utc-time")   return resolveTimeColor(Plasmoid.configuration.utcTimeColor, fallback);
+        if (kind === "local-time") return resolveTimeColor(Plasmoid.configuration.localTimeColor, fallback, Plasmoid.configuration.localTimeCustomColor);
+        if (kind === "utc-time")   return resolveTimeColor(Plasmoid.configuration.utcTimeColor, fallback, Plasmoid.configuration.utcTimeCustomColor);
         return fallback;
     }
 

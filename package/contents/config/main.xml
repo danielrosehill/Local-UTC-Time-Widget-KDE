@@ -115,12 +115,18 @@
             <default>day</default>
         </entry>
         <entry name="localTimeColor" type="String">
-            <!-- default | white | yellow | muted -->
+            <!-- default | white | yellow | muted | custom -->
             <default>default</default>
         </entry>
+        <entry name="localTimeCustomColor" type="String">
+            <default>#FFFFFF</default>
+        </entry>
         <entry name="utcTimeColor" type="String">
-            <!-- default | white | yellow | muted -->
+            <!-- default | white | yellow | muted | custom -->
             <default>muted</default>
+        </entry>
+        <entry name="utcTimeCustomColor" type="String">
+            <default>#D9D9D9</default>
         </entry>
     </group>
 </kcfg>

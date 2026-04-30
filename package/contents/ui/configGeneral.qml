@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import org.kde.kirigami as Kirigami
 
 Kirigami.FormLayout {
@@ -15,13 +16,16 @@ Kirigami.FormLayout {
     property string cfg_labelPosition
     property alias cfg_showUtcOffset: showUtcOffset.checked
     property string cfg_localTimeColor
+    property string cfg_localTimeCustomColor
     property string cfg_utcTimeColor
+    property string cfg_utcTimeCustomColor
 
     readonly property var timeColorOptions: [
         { text: i18n("Default (theme)"),         value: "default" },
         { text: i18n("Pure white"),               value: "white" },
         { text: i18n("Yellow"),                   value: "yellow" },
-        { text: i18n("Muted (less prominent)"),   value: "muted" }
+        { text: i18n("Muted (less prominent)"),   value: "muted" },
+        { text: i18n("Custom…"),                  value: "custom" }
     ]
 
     // Time format
@@ -55,28 +59,81 @@ Kirigami.FormLayout {
     Item { Kirigami.FormData.isSection: true }
 
     // Colours
-    ComboBox {
-        id: localColorCombo
+    RowLayout {
         Kirigami.FormData.label: i18n("Local time colour:")
-        model: page.timeColorOptions
-        textRole: "text"
-        valueRole: "value"
-        currentIndex: {
-            for (let i = 0; i < model.length; i++) if (model[i].value === cfg_localTimeColor) return i;
-            return 0;
+        spacing: Kirigami.Units.smallSpacing
+        ComboBox {
+            id: localColorCombo
+            model: page.timeColorOptions
+            textRole: "text"
+            valueRole: "value"
+            currentIndex: {
+                for (let i = 0; i < model.length; i++) if (model[i].value === cfg_localTimeColor) return i;
+                return 0;
+            }
+            onActivated: cfg_localTimeColor = model[currentIndex].value
         }
-        onActivated: cfg_localTimeColor = model[currentIndex].value
+        Button {
+            visible: cfg_localTimeColor === "custom"
+            implicitWidth: Kirigami.Units.gridUnit * 2
+            background: Rectangle {
+                color: cfg_localTimeCustomColor || "#FFFFFF"
+                border.color: Kirigami.Theme.textColor
+                border.width: 1
+                radius: 3
+            }
+            text: " "
+            onClicked: localColorDialog.open()
+        }
+        Label {
+            visible: cfg_localTimeColor === "custom"
+            text: cfg_localTimeCustomColor
+            font.family: "monospace"
+        }
     }
-    ComboBox {
-        id: utcColorCombo
+    RowLayout {
         Kirigami.FormData.label: i18n("UTC time colour:")
-        model: page.timeColorOptions
-        textRole: "text"
-        valueRole: "value"
-        currentIndex: {
-            for (let i = 0; i < model.length; i++) if (model[i].value === cfg_utcTimeColor) return i;
-            return 0;
+        spacing: Kirigami.Units.smallSpacing
+        ComboBox {
+            id: utcColorCombo
+            model: page.timeColorOptions
+            textRole: "text"
+            valueRole: "value"
+            currentIndex: {
+                for (let i = 0; i < model.length; i++) if (model[i].value === cfg_utcTimeColor) return i;
+                return 0;
+            }
+            onActivated: cfg_utcTimeColor = model[currentIndex].value
         }
-        onActivated: cfg_utcTimeColor = model[currentIndex].value
+        Button {
+            visible: cfg_utcTimeColor === "custom"
+            implicitWidth: Kirigami.Units.gridUnit * 2
+            background: Rectangle {
+                color: cfg_utcTimeCustomColor || "#FFFFFF"
+                border.color: Kirigami.Theme.textColor
+                border.width: 1
+                radius: 3
+            }
+            text: " "
+            onClicked: utcColorDialog.open()
+        }
+        Label {
+            visible: cfg_utcTimeColor === "custom"
+            text: cfg_utcTimeCustomColor
+            font.family: "monospace"
+        }
+    }
+
+    ColorDialog {
+        id: localColorDialog
+        title: i18n("Pick local time colour")
+        selectedColor: cfg_localTimeCustomColor || "#FFFFFF"
+        onAccepted: cfg_localTimeCustomColor = selectedColor.toString().toUpperCase()
+    }
+    ColorDialog {
+        id: utcColorDialog
+        title: i18n("Pick UTC time colour")
+        selectedColor: cfg_utcTimeCustomColor || "#FFFFFF"
+        onAccepted: cfg_utcTimeCustomColor = selectedColor.toString().toUpperCase()
     }
 }
