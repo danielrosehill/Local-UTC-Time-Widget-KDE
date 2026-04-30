@@ -33,6 +33,44 @@ function fetchHebrewDate(dateObj, cb) {
     } catch (e) { cb(false, null, "Exception: " + e); }
 }
 
+function _sunsetKey(d, lat, lon) {
+    return _key(d) + "|" + lat.toFixed(3) + "|" + lon.toFixed(3);
+}
+
+var _sunsetCache = {};
+
+// cb(ok, Date|null, err). `dateObj` is the civil day to query; sunset returned in local time.
+function fetchSunset(dateObj, lat, lon, tzid, cb) {
+    var k = _sunsetKey(dateObj, lat, lon);
+    if (_sunsetCache[k]) { cb(true, _sunsetCache[k], ""); return; }
+    try {
+        var iso = dateObj.getFullYear() + "-"
+            + String(dateObj.getMonth() + 1).padStart(2, "0") + "-"
+            + String(dateObj.getDate()).padStart(2, "0");
+        var url = "https://www.hebcal.com/zmanim?cfg=json"
+            + "&latitude=" + encodeURIComponent(lat)
+            + "&longitude=" + encodeURIComponent(lon)
+            + (tzid ? "&tzid=" + encodeURIComponent(tzid) : "")
+            + "&date=" + iso;
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== XMLHttpRequest.DONE) return;
+            if (xhr.status !== 200) { cb(false, null, "HTTP " + xhr.status); return; }
+            try {
+                var data = JSON.parse(xhr.responseText);
+                var t = data && data.times && data.times.sunset;
+                if (!t) { cb(false, null, "No sunset in response"); return; }
+                var sunset = new Date(t);
+                if (isNaN(sunset.getTime())) { cb(false, null, "Bad sunset value"); return; }
+                _sunsetCache[k] = sunset;
+                cb(true, sunset, "");
+            } catch (e) { cb(false, null, "Parse error: " + e); }
+        };
+        xhr.send();
+    } catch (e) { cb(false, null, "Exception: " + e); }
+}
+
 function format(hebrew, withYear, monthFirst) {
     if (!hebrew || !hebrew.hd || !hebrew.hm) return "";
     if (monthFirst) {

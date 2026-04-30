@@ -79,6 +79,22 @@
         <entry name="hebrewMonthFirst" type="Bool">
             <default>false</default>
         </entry>
+        <entry name="hebrewLatitude" type="Double">
+            <default>0.0</default>
+        </entry>
+        <entry name="hebrewLongitude" type="Double">
+            <default>0.0</default>
+        </entry>
+        <entry name="hebrewTzid" type="String">
+            <default></default>
+        </entry>
+        <entry name="hebrewLocationSet" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="hebrewRolloverMode" type="String">
+            <!-- midnight or sunset -->
+            <default>midnight</default>
+        </entry>
         <entry name="cardOrder" type="String">
             <!-- Comma-separated list of block kinds, in display order.
                  Available: local-time, utc-time, date-combined,

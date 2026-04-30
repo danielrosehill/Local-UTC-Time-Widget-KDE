@@ -42,20 +42,88 @@ PlasmoidItem {
         return false;
     }
 
-    function refreshHebrewDate() {
-        if (!needsHebrew()) { hebrewDateStr = ""; return; }
-        const d = new Date();
-        const key = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
-        if (key === lastHebrewKey && hebrewParts.hd) {
-            hebrewDateStr = Hebcal.format(hebrewParts, Plasmoid.configuration.hebrewDateWithYear, Plasmoid.configuration.hebrewMonthFirst);
-            return;
-        }
-        Hebcal.fetchHebrewDate(d, function (ok, h, err) {
-            if (ok) {
-                hebrewParts = h;
-                hebrewDateStr = Hebcal.format(h, Plasmoid.configuration.hebrewDateWithYear, Plasmoid.configuration.hebrewMonthFirst);
-                lastHebrewKey = key;
+    function _civilKey(d) {
+        return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+    }
+    function _hebrewLocationReady() {
+        return Plasmoid.configuration.hebrewLocationSet
+            && (Plasmoid.configuration.hebrewLatitude !== 0.0 || Plasmoid.configuration.hebrewLongitude !== 0.0);
+    }
+    function _sunsetEnabled() {
+        return Plasmoid.configuration.hebrewRolloverMode === "sunset" && _hebrewLocationReady();
+    }
+
+    // Resolve the civil date that determines today's Hebrew date (post-sunset → next civil day).
+    function _resolveActiveCivilDate(now, cb) {
+        if (!_sunsetEnabled()) { cb(new Date(now)); return; }
+        const lat = Plasmoid.configuration.hebrewLatitude;
+        const lon = Plasmoid.configuration.hebrewLongitude;
+        const tzid = Plasmoid.configuration.hebrewTzid;
+        Hebcal.fetchSunset(now, lat, lon, tzid, function (ok, sunset, err) {
+            if (!ok || !sunset) { cb(new Date(now)); return; }
+            if (now.getTime() >= sunset.getTime()) {
+                const next = new Date(now);
+                next.setDate(next.getDate() + 1);
+                cb(next);
+            } else {
+                cb(new Date(now));
             }
+        });
+    }
+
+    function _scheduleNextHebrewFlip() {
+        const now = new Date();
+        if (_sunsetEnabled()) {
+            const lat = Plasmoid.configuration.hebrewLatitude;
+            const lon = Plasmoid.configuration.hebrewLongitude;
+            const tzid = Plasmoid.configuration.hebrewTzid;
+            // If today's sunset is still ahead, wait for it; otherwise wait for tomorrow's.
+            Hebcal.fetchSunset(now, lat, lon, tzid, function (ok, sunset, err) {
+                if (ok && sunset && sunset.getTime() > now.getTime()) {
+                    flipTimer.interval = sunset.getTime() - now.getTime() + 1000;
+                    flipTimer.restart();
+                    return;
+                }
+                const tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                Hebcal.fetchSunset(tomorrow, lat, lon, tzid, function (ok2, ss2) {
+                    if (ok2 && ss2 && ss2.getTime() > now.getTime()) {
+                        flipTimer.interval = ss2.getTime() - now.getTime() + 1000;
+                        flipTimer.restart();
+                    } else {
+                        // Fallback: try again in 6h
+                        flipTimer.interval = 6 * 60 * 60 * 1000;
+                        flipTimer.restart();
+                    }
+                });
+            });
+        } else {
+            // Civil midnight tomorrow + 5s safety margin
+            const next = new Date(now);
+            next.setDate(next.getDate() + 1);
+            next.setHours(0, 0, 5, 0);
+            flipTimer.interval = Math.max(60 * 1000, next.getTime() - now.getTime());
+            flipTimer.restart();
+        }
+    }
+
+    function refreshHebrewDate() {
+        if (!needsHebrew()) { hebrewDateStr = ""; lastHebrewKey = ""; return; }
+        _resolveActiveCivilDate(new Date(), function (civilDay) {
+            const key = _civilKey(civilDay);
+            if (key === lastHebrewKey && hebrewParts.hd) {
+                hebrewDateStr = Hebcal.format(hebrewParts, Plasmoid.configuration.hebrewDateWithYear, Plasmoid.configuration.hebrewMonthFirst);
+                _scheduleNextHebrewFlip();
+                return;
+            }
+            Hebcal.fetchHebrewDate(civilDay, function (ok, h, err) {
+                if (ok) {
+                    hebrewParts = h;
+                    hebrewDateStr = Hebcal.format(h, Plasmoid.configuration.hebrewDateWithYear, Plasmoid.configuration.hebrewMonthFirst);
+                    lastHebrewKey = key;
+                }
+                _scheduleNextHebrewFlip();
+            });
         });
     }
 
@@ -63,6 +131,7 @@ PlasmoidItem {
     Connections {
         target: Plasmoid.configuration
         function onShowHebrewDateChanged() { root.refreshHebrewDate(); }
+        function onHebrewEnabledChanged() { root.refreshHebrewDate(); }
         function onHebrewDateWithYearChanged() {
             root.hebrewDateStr = Hebcal.format(root.hebrewParts, Plasmoid.configuration.hebrewDateWithYear, Plasmoid.configuration.hebrewMonthFirst);
             root.refreshHebrewDate();
@@ -70,12 +139,17 @@ PlasmoidItem {
         function onHebrewMonthFirstChanged() {
             root.hebrewDateStr = Hebcal.format(root.hebrewParts, Plasmoid.configuration.hebrewDateWithYear, Plasmoid.configuration.hebrewMonthFirst);
         }
+        function onHebrewRolloverModeChanged() { root.refreshHebrewDate(); }
+        function onHebrewLocationSetChanged() { root.refreshHebrewDate(); }
+        function onHebrewLatitudeChanged() { root.refreshHebrewDate(); }
+        function onHebrewLongitudeChanged() { root.refreshHebrewDate(); }
+        function onHebrewTzidChanged() { root.refreshHebrewDate(); }
         function onCardOrderChanged() { root.refreshHebrewDate(); }
     }
     Timer {
-        interval: 60 * 60 * 1000
-        running: root.needsHebrew()
-        repeat: true
+        id: flipTimer
+        repeat: false
+        running: false
         onTriggered: root.refreshHebrewDate()
     }
 
@@ -330,7 +404,7 @@ PlasmoidItem {
                             font.bold: !dateBoxPanel.weekdayTop
                         }
                         Text {
-                            visible: Plasmoid.configuration.showHebrewDate && root.hebrewDateStr.length > 0
+                            visible: root.needsHebrew() && root.hebrewDateStr.length > 0
                             Layout.alignment: Qt.AlignHCenter
                             text: root.hebrewDateStr
                             color: panelItem.lColor

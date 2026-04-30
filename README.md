@@ -27,6 +27,7 @@ A modular Plasma 6 desktop widget that renders time, date, and (optionally) Hebr
 - 12 / 24-hour format, optional seconds
 - Date card layouts: single line or two lines (`Thurs / Apr 30`), long or short month names
 - Hebrew date: day + month (`Iyyar 13`), with optional Hebrew year
+- Optional sunset (shkiah) rollover for the Hebrew date — requires user-supplied latitude, longitude, and IANA timezone in the *Hebrew Calendar* settings page (no auto-geolocation; coordinates must be entered manually for predictable, offline-friendly behavior)
 - Custom font family, size, bold, and colors for time and labels
 - Adjustable gap between cards
 

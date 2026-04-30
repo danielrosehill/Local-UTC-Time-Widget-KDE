@@ -13,6 +13,11 @@ ConfigModel {
         source: "configDate.qml"
     }
     ConfigCategory {
+        name: i18n("Hebrew Calendar")
+        icon: "view-calendar-day"
+        source: "configHebrew.qml"
+    }
+    ConfigCategory {
         name: i18n("Appearance")
         icon: "preferences-desktop-color"
         source: "configAppearance.qml"

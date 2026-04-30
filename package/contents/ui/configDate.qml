@@ -11,9 +11,6 @@ ColumnLayout {
     property string cfg_dateBoxLayout
     property string cfg_gregorianDateStyle
     property alias cfg_hebrewEnabled: hebrewEnabled.checked
-    property alias cfg_showHebrewDate: showHebrewDate.checked
-    property alias cfg_hebrewDateWithYear: hebrewDateWithYear.checked
-    property alias cfg_hebrewMonthFirst: hebrewMonthFirst.checked
     property alias cfg_monthLong: monthLong.checked
     property string cfg_cardOrder
 
@@ -118,9 +115,12 @@ ColumnLayout {
             text: i18n("Enable Hebrew date options")
             onCheckedChanged: page.rebuildModel()
         }
-        CheckBox { id: showHebrewDate; visible: hebrewEnabled.checked; Kirigami.FormData.label: i18n("Inside date card:"); text: i18n("Include Hebrew date row") }
-        CheckBox { id: hebrewMonthFirst; visible: hebrewEnabled.checked; text: i18n("Month first (Iyyar 13)") }
-        CheckBox { id: hebrewDateWithYear; visible: hebrewEnabled.checked; text: i18n("Include Hebrew year") }
+        Label {
+            visible: hebrewEnabled.checked
+            text: i18n("Configure formatting and location in the \"Hebrew Calendar\" page.")
+            opacity: 0.7
+            wrapMode: Text.WordWrap
+        }
     }
 
     Kirigami.Separator { Layout.fillWidth: true }
@@ -223,6 +223,9 @@ ColumnLayout {
                         Layout.fillWidth: true
                         elide: Text.ElideRight
                         color: dragArea.drag.active ? Kirigami.Theme.highlightedTextColor : Kirigami.Theme.textColor
+                        font.italic: page.isHebrewKind(model.kind)
+                        horizontalAlignment: page.isHebrewKind(model.kind) ? Text.AlignRight : Text.AlignLeft
+                        opacity: page.isHebrewKind(model.kind) && !dragArea.drag.active ? 0.85 : 1.0
                     }
                 }
             }
