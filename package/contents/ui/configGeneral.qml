@@ -73,16 +73,18 @@ Kirigami.FormLayout {
             }
             onActivated: cfg_localTimeColor = model[currentIndex].value
         }
+        Rectangle {
+            visible: cfg_localTimeColor === "custom"
+            implicitWidth: Kirigami.Units.gridUnit * 1.5
+            implicitHeight: Kirigami.Units.gridUnit * 1.2
+            color: cfg_localTimeCustomColor || "#FFFFFF"
+            border.color: Kirigami.Theme.textColor
+            border.width: 1
+            radius: 3
+        }
         Button {
             visible: cfg_localTimeColor === "custom"
-            implicitWidth: Kirigami.Units.gridUnit * 2
-            background: Rectangle {
-                color: cfg_localTimeCustomColor || "#FFFFFF"
-                border.color: Kirigami.Theme.textColor
-                border.width: 1
-                radius: 3
-            }
-            text: " "
+            text: i18n("Pick…")
             onClicked: localColorDialog.open()
         }
         Label {
@@ -105,16 +107,18 @@ Kirigami.FormLayout {
             }
             onActivated: cfg_utcTimeColor = model[currentIndex].value
         }
+        Rectangle {
+            visible: cfg_utcTimeColor === "custom"
+            implicitWidth: Kirigami.Units.gridUnit * 1.5
+            implicitHeight: Kirigami.Units.gridUnit * 1.2
+            color: cfg_utcTimeCustomColor || "#FFFFFF"
+            border.color: Kirigami.Theme.textColor
+            border.width: 1
+            radius: 3
+        }
         Button {
             visible: cfg_utcTimeColor === "custom"
-            implicitWidth: Kirigami.Units.gridUnit * 2
-            background: Rectangle {
-                color: cfg_utcTimeCustomColor || "#FFFFFF"
-                border.color: Kirigami.Theme.textColor
-                border.width: 1
-                radius: 3
-            }
-            text: " "
+            text: i18n("Pick…")
             onClicked: utcColorDialog.open()
         }
         Label {
