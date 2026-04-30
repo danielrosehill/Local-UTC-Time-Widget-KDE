@@ -293,10 +293,13 @@ PlasmoidItem {
                                 visible: index > 0 && Plasmoid.configuration.showDivider
                                 Layout.preferredWidth: 1
                                 Layout.fillHeight: true
+                                Layout.preferredHeight: panelItem.fsTime + 8
                                 Layout.topMargin: 3
                                 Layout.bottomMargin: 3
+                                Layout.leftMargin: Math.floor(Plasmoid.configuration.spacing / 2)
+                                Layout.rightMargin: Math.floor(Plasmoid.configuration.spacing / 2)
                                 color: panelItem.lColor
-                                opacity: 0.3
+                                opacity: 0.5
                             }
 
                             ColumnLayout {
@@ -353,9 +356,9 @@ PlasmoidItem {
                                 return "";
                             }
 
-                            // Standard time/date block: primary value, optional label below or inline
+                            // Time block: big primary + label (inline or below)
                             RowLayout {
-                                visible: !panelBlock.isCombinedDate
+                                visible: panelBlock.isTimeBlock
                                 spacing: 4
                                 Layout.alignment: Qt.AlignHCenter
                                 Text {
@@ -366,7 +369,7 @@ PlasmoidItem {
                                     font.bold: true
                                 }
                                 Text {
-                                    visible: Plasmoid.configuration.showLabels && !labelsBelow && panelBlock.isTimeBlock
+                                    visible: Plasmoid.configuration.showLabels && !labelsBelow
                                     text: panelBlock.labelFor(panelBlock.kind)
                                     color: panelItem.lColor
                                     font.family: root.fontFamily
@@ -374,8 +377,7 @@ PlasmoidItem {
                                 }
                             }
                             Text {
-                                visible: !panelBlock.isCombinedDate && Plasmoid.configuration.showLabels
-                                    && labelsBelow && panelBlock.isTimeBlock
+                                visible: panelBlock.isTimeBlock && Plasmoid.configuration.showLabels && labelsBelow
                                 Layout.alignment: Qt.AlignHCenter
                                 text: {
                                     const lbl = panelBlock.labelFor(panelBlock.kind);
@@ -388,7 +390,7 @@ PlasmoidItem {
                                 font.pixelSize: panelItem.fsLabel
                             }
 
-                            // Combined date block: weekday + date stacked, plus optional Hebrew row
+                            // Combined Gregorian date block: weekday + date stacked, plus optional Hebrew row
                             ColumnLayout {
                                 visible: panelBlock.isCombinedDate
                                 spacing: 0
@@ -432,6 +434,49 @@ PlasmoidItem {
                                     font.pixelSize: panelItem.fsLabel
                                     font.weight: Font.Medium
                                 }
+                            }
+
+                            // Multi-part Hebrew block: two stacked lines, date-sized, ordered per hebrewMonthFirst.
+                            // Year (when present) is appended to the month line so we always render exactly two lines.
+                            ColumnLayout {
+                                visible: panelBlock.isHebrewMulti
+                                spacing: 0
+
+                                readonly property bool withYear: panelBlock.kind === "hebrew-day-month-year" || panelBlock.kind === "hebrew-month-day-year"
+                                readonly property bool monthOnTop: Plasmoid.configuration.hebrewMonthFirst
+                                readonly property string dayLine: root.hebrewParts.hd ? String(root.hebrewParts.hd) : "…"
+                                readonly property string monthLine: {
+                                    const m = root.hebrewParts.hm || "…";
+                                    return withYear && root.hebrewParts.hy ? (m + " " + root.hebrewParts.hy) : m;
+                                }
+
+                                Text {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: parent.monthOnTop ? parent.monthLine : parent.dayLine
+                                    color: panelItem.tColor
+                                    font.family: root.fontFamily
+                                    font.pixelSize: panelItem.fsLabel
+                                    font.bold: parent.monthOnTop
+                                }
+                                Text {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: parent.monthOnTop ? parent.dayLine : parent.monthLine
+                                    color: panelItem.tColor
+                                    font.family: root.fontFamily
+                                    font.pixelSize: panelItem.fsLabel
+                                    font.bold: !parent.monthOnTop
+                                }
+                            }
+
+                            // Single-value date kinds (weekday, gregorian-date, month, day, hebrew-day/month/year)
+                            Text {
+                                visible: !panelBlock.isTimeBlock && !panelBlock.isCombinedDate && !panelBlock.isHebrewMulti
+                                Layout.alignment: Qt.AlignHCenter
+                                text: panelBlock.primaryFor(panelBlock.kind)
+                                color: panelItem.tColor
+                                font.family: root.fontFamily
+                                font.pixelSize: panelItem.fsLabel
+                                font.bold: true
                             }
                             }
                         }
