@@ -232,6 +232,33 @@ PlasmoidItem {
         return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][mo] + " " + day;
     }
 
+    // Date line for the combined date card: respects gregorianDateFormat.
+    function dateBoxDateLine(d, utc) {
+        const fmt = Plasmoid.configuration.gregorianDateFormat;
+        const day = (utc ? d.getUTCDate() : d.getDate()).toString();
+        if (fmt === "day") return day;
+        const mo = monthName(d, utc, Plasmoid.configuration.monthLong);
+        if (fmt === "day-month") return day + " " + mo;
+        return mo + " " + day; // month-day (legacy)
+    }
+
+    // Resolve a configured time-color preset to an actual color, given a
+    // fallback (theme/palette default). "muted" darkens the fallback.
+    function resolveTimeColor(name, fallback) {
+        switch (name) {
+            case "white":  return "#FFFFFF";
+            case "yellow": return "#F2C94C";
+            case "muted":  return Qt.rgba(fallback.r, fallback.g, fallback.b, 0.85);
+            case "default":
+            default:       return fallback;
+        }
+    }
+    function timeColorFor(kind, fallback) {
+        if (kind === "local-time") return resolveTimeColor(Plasmoid.configuration.localTimeColor, fallback);
+        if (kind === "utc-time")   return resolveTimeColor(Plasmoid.configuration.utcTimeColor, fallback);
+        return fallback;
+    }
+
     Timer {
         interval: Plasmoid.configuration.showSeconds ? 500 : 5000
         running: true
@@ -310,6 +337,7 @@ PlasmoidItem {
                                 readonly property string kind: modelData
                             readonly property bool isCombinedDate: kind === "date-combined"
                             readonly property bool isTimeBlock: kind === "local-time" || kind === "utc-time"
+                            readonly property bool isWeekdayDay: kind === "weekday-day"
                             readonly property bool isHebrewMulti:
                                    kind === "hebrew-day-month"
                                 || kind === "hebrew-day-month-year"
@@ -363,7 +391,7 @@ PlasmoidItem {
                                 Layout.alignment: Qt.AlignHCenter
                                 Text {
                                     text: panelBlock.primaryFor(panelBlock.kind)
-                                    color: panelItem.tColor
+                                    color: timeColorFor(panelBlock.kind, panelItem.tColor)
                                     font.family: root.fontFamily
                                     font.pixelSize: panelItem.fsTime
                                     font.bold: true
@@ -396,7 +424,7 @@ PlasmoidItem {
                                 spacing: 0
 
                                 readonly property string wd: dateBoxWeekday(panelBlock.dbDate, panelBlock.dbUtc)
-                                readonly property string md: dateBoxMonthDay(panelBlock.dbDate, panelBlock.dbUtc)
+                                readonly property string md: dateBoxDateLine(panelBlock.dbDate, panelBlock.dbUtc)
 
                                 Text {
                                     visible: panelBlock.singleLineDate
@@ -468,9 +496,31 @@ PlasmoidItem {
                                 }
                             }
 
+                            // Weekday + day-of-month stacked (no month name)
+                            ColumnLayout {
+                                visible: panelBlock.isWeekdayDay
+                                spacing: 0
+                                Text {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: dateBoxWeekday(panelBlock.dbDate, panelBlock.dbUtc)
+                                    color: panelItem.tColor
+                                    font.family: root.fontFamily
+                                    font.pixelSize: panelItem.fsLabel
+                                    font.bold: true
+                                }
+                                Text {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: dayOfMonth(panelBlock.dbDate, panelBlock.dbUtc)
+                                    color: panelItem.tColor
+                                    font.family: root.fontFamily
+                                    font.pixelSize: panelItem.fsLabel
+                                    font.bold: true
+                                }
+                            }
+
                             // Single-value date kinds (weekday, gregorian-date, month, day, hebrew-day/month/year)
                             Text {
-                                visible: !panelBlock.isTimeBlock && !panelBlock.isCombinedDate && !panelBlock.isHebrewMulti
+                                visible: !panelBlock.isTimeBlock && !panelBlock.isCombinedDate && !panelBlock.isHebrewMulti && !panelBlock.isWeekdayDay
                                 Layout.alignment: Qt.AlignHCenter
                                 text: panelBlock.primaryFor(panelBlock.kind)
                                 color: panelItem.tColor
@@ -556,6 +606,7 @@ PlasmoidItem {
 
                         readonly property string kind: modelData
                         readonly property bool isCombinedDate: kind === "date-combined"
+                        readonly property bool isWeekdayDay: kind === "weekday-day"
                         readonly property bool isHebrewCombined: kind === "hebrew-day-month"
                             || kind === "hebrew-day-month-year"
                             || kind === "hebrew-month-day"
@@ -602,19 +653,51 @@ PlasmoidItem {
                             }
                         }
 
+                        // Weekday + day-of-month stacked (desktop card)
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: Math.max(6, Math.floor(deskItem.fsTime * 0.18))
+                            spacing: Math.max(2, Math.floor(deskItem.fsTime * 0.06))
+                            visible: card.isWeekdayDay
+                            Item { Layout.fillHeight: true }
+                            Text {
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
+                                text: dateBoxWeekday(root.activeDate(), root.activeUtc())
+                                color: deskItem.pal.text
+                                font.family: root.fontFamily
+                                font.pixelSize: deskItem.fsDate
+                                font.bold: true
+                                fontSizeMode: Text.HorizontalFit
+                                minimumPixelSize: 10
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
+                                text: dayOfMonth(root.activeDate(), root.activeUtc())
+                                color: deskItem.pal.text
+                                font.family: root.fontFamily
+                                font.pixelSize: deskItem.fsDate
+                                font.bold: true
+                                fontSizeMode: Text.HorizontalFit
+                                minimumPixelSize: 10
+                            }
+                            Item { Layout.fillHeight: true }
+                        }
+
                         // Simple block: primary + optional secondary
                         ColumnLayout {
                             anchors.fill: parent
                             anchors.margins: Math.max(6, Math.floor(deskItem.fsTime * 0.18))
                             spacing: Math.max(2, Math.floor(deskItem.fsTime * 0.06))
-                            visible: !card.isCombinedDate
+                            visible: !card.isCombinedDate && !card.isWeekdayDay
 
                             Item { Layout.fillHeight: true }
                             Text {
                                 Layout.fillWidth: true
                                 horizontalAlignment: Text.AlignHCenter
                                 text: card.primary
-                                color: deskItem.pal.text
+                                color: timeColorFor(card.kind, deskItem.pal.text)
                                 font.family: root.fontFamily
                                 font.pixelSize: deskItem.fsTime
                                 font.bold: true
@@ -655,7 +738,7 @@ PlasmoidItem {
                             readonly property bool singleLine: Plasmoid.configuration.gregorianDateStyle === "single-line"
                             readonly property bool showHeb: Plasmoid.configuration.showHebrewDate && root.hebrewDateStr.length > 0
                             readonly property string wd: dateBoxWeekday(root.activeDate(), root.activeUtc())
-                            readonly property string md: monthName(root.activeDate(), root.activeUtc(), Plasmoid.configuration.monthLong) + " " + dayOfMonth(root.activeDate(), root.activeUtc())
+                            readonly property string md: dateBoxDateLine(root.activeDate(), root.activeUtc())
 
                             Item { Layout.fillHeight: true }
                             Text {

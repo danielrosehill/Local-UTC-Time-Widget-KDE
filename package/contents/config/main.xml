@@ -106,5 +106,21 @@
         <entry name="monthLong" type="Bool">
             <default>false</default>
         </entry>
+        <entry name="gregorianDateFormat" type="String">
+            <!-- Format of the date line in the combined date card.
+                 day        → just the day of month (30)
+                 day-month  → "30 Apr" (day before month)
+                 month-day  → "Apr 30" (month before day, original)
+            -->
+            <default>day</default>
+        </entry>
+        <entry name="localTimeColor" type="String">
+            <!-- default | white | yellow | muted -->
+            <default>default</default>
+        </entry>
+        <entry name="utcTimeColor" type="String">
+            <!-- default | white | yellow | muted -->
+            <default>muted</default>
+        </entry>
     </group>
 </kcfg>

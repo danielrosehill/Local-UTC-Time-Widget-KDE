@@ -11,13 +11,23 @@ Kirigami.FormLayout {
     property string cfg_desktopOrientation
     property string cfg_desktopPalette
     property alias cfg_spacing: spacing.value
+    property alias cfg_localOnRight: localOnRight.checked
+    property alias cfg_showDivider: showDivider.checked
 
-    CheckBox { id: desktopCards; Kirigami.FormData.label: i18n("Card style:"); text: i18n("Render desktop blocks as rounded cards") }
+    // Layout direction & dividers (apply across both tray and desktop)
+    CheckBox { id: localOnRight; Kirigami.FormData.label: i18n("Order:"); text: i18n("Local clock on the right (UTC on left)") }
+    CheckBox { id: showDivider; text: i18n("Show vertical divider between tray blocks") }
+    SpinBox { id: spacing; Kirigami.FormData.label: i18n("Gap between blocks (px):"); from: 0; to: 100 }
+
+    Item { Kirigami.FormData.isSection: true }
+
+    // Desktop-only visuals
+    CheckBox { id: desktopCards; Kirigami.FormData.label: i18n("Desktop cards:"); text: i18n("Render desktop blocks as rounded cards") }
     CheckBox { id: desktopShowContainer; text: i18n("Show outer container background"); enabled: desktopCards.checked }
 
     ComboBox {
         id: orientationCombo
-        Kirigami.FormData.label: i18n("Stack:")
+        Kirigami.FormData.label: i18n("Desktop stack:")
         model: [
             { text: i18n("Horizontal (side-by-side)"), value: "horizontal" },
             { text: i18n("Vertical (stacked)"), value: "vertical" }
@@ -30,15 +40,15 @@ Kirigami.FormLayout {
 
     ComboBox {
         id: paletteCombo
-        Kirigami.FormData.label: i18n("Palette:")
+        Kirigami.FormData.label: i18n("Desktop palette:")
         enabled: desktopCards.checked
         model: [
-            { text: i18n("Light — cream + white"), value: "light" },
-            { text: i18n("Dark — charcoal"), value: "dark" },
-            { text: i18n("Slate — cool blue-grey"), value: "slate" },
-            { text: i18n("Warm — terracotta + ivory"), value: "warm" },
-            { text: i18n("Midnight — navy + cyan"), value: "midnight" },
-            { text: i18n("Auto (Plasma theme)"), value: "auto" }
+            { text: i18n("Light — cream + white"),         value: "light" },
+            { text: i18n("Dark — charcoal"),                value: "dark" },
+            { text: i18n("Slate — cool blue-grey"),         value: "slate" },
+            { text: i18n("Warm — terracotta + ivory"),      value: "warm" },
+            { text: i18n("Midnight — navy + cyan"),         value: "midnight" },
+            { text: i18n("Auto (Plasma theme)"),            value: "auto" }
         ]
         textRole: "text"
         valueRole: "value"
@@ -48,8 +58,4 @@ Kirigami.FormLayout {
         }
         onActivated: cfg_desktopPalette = model[currentIndex].value
     }
-
-    Item { Kirigami.FormData.isSection: true }
-
-    SpinBox { id: spacing; Kirigami.FormData.label: i18n("Gap between blocks (px):"); from: 0; to: 100 }
 }

@@ -3,19 +3,19 @@ import org.kde.plasma.configuration
 
 ConfigModel {
     ConfigCategory {
-        name: i18n("General")
-        icon: "configure"
+        name: i18n("Clock")
+        icon: "clock"
         source: "configGeneral.qml"
     }
     ConfigCategory {
-        name: i18n("Date & Blocks")
+        name: i18n("Date")
         icon: "view-calendar"
         source: "configDate.qml"
     }
     ConfigCategory {
-        name: i18n("Tray Blocks")
-        icon: "preferences-system-windows-effect-systemtray"
-        source: "configTray.qml"
+        name: i18n("Blocks")
+        icon: "view-grid"
+        source: "configBlocks.qml"
     }
     ConfigCategory {
         name: i18n("Hebrew Calendar")
