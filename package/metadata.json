@@ -7,13 +7,13 @@
             }
         ],
         "Category": "Date and Time",
-        "Description": "Compact dual-clock showing local time and UTC (Zulu), with configurable labels, font, color, and date display.",
+        "Description": "Modular time/date desktop blocks for Plasma 6 — local time, UTC, Gregorian date, and optional Hebrew calendar, all as reorderable cards.",
         "Icon": "clock",
         "Id": "com.danielrosehill.localutctime",
         "License": "MIT",
-        "Name": "Local + UTC Time",
-        "Version": "1.1.0",
-        "Website": "https://github.com/danielrosehill/Local-UTC-Time-Widget-KDE"
+        "Name": "KDE Time Blocks",
+        "Version": "1.2.0",
+        "Website": "https://github.com/danielrosehill/KDE-Time-Blocks-Widget"
     },
     "KPackageStructure": "Plasma/Applet",
     "X-Plasma-API-Minimum-Version": "6.0"

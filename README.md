@@ -1,4 +1,6 @@
-# Local + UTC Time Widget for KDE Plasma 6
+# KDE Time Blocks Widget (Plasma 6)
+
+Modular desktop time and date cards for KDE Plasma 6 — local time, UTC, Gregorian date, and optional Hebrew calendar.
 
 A modular Plasma 6 desktop widget that renders time, date, and (optionally) Hebrew date as side-by-side cards — handy for ops, aviation, comms with remote teams, or anyone who works against UTC. Also rolls in Hebrew calendar display, replacing the standalone `Hebrew-Date-KDE-Widget`.
 
@@ -33,14 +35,14 @@ A modular Plasma 6 desktop widget that renders time, date, and (optionally) Hebr
 ### From the prebuilt .plasmoid
 
 ```bash
-kpackagetool6 -t Plasma/Applet --install local-utc-time-widget.plasmoid
+kpackagetool6 -t Plasma/Applet --install kde-time-blocks-widget.plasmoid
 ```
 
 ### From source
 
 ```bash
-git clone https://github.com/danielrosehill/Local-UTC-Time-Widget-KDE.git
-cd Local-UTC-Time-Widget-KDE
+git clone https://github.com/danielrosehill/KDE-Time-Blocks-Widget.git
+cd KDE-Time-Blocks-Widget
 kpackagetool6 -t Plasma/Applet --install package
 ```
 

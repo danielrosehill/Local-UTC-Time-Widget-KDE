@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp /home/daniel/.claude/image-cache/a48db614-3fc3-43f0-b911-2df65b066cba/10.png screenshots/widget-desktop.png)",
+      "Bash(cp /home/daniel/.claude/image-cache/a48db614-3fc3-43f0-b911-2df65b066cba/11.png screenshots/settings.png)",
+      "Bash(cp /home/daniel/.claude/image-cache/a48db614-3fc3-43f0-b911-2df65b066cba/12.png screenshots/widget-with-hebrew.png)",
+      "Bash(cp /home/daniel/.claude/image-cache/a48db614-3fc3-43f0-b911-2df65b066cba/12.png preview.png)"
+    ]
+  }
+}

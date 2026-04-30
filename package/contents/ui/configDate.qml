@@ -10,20 +10,23 @@ ColumnLayout {
     property alias cfg_dateBoxUseUtc: dateBoxUseUtc.checked
     property string cfg_dateBoxLayout
     property string cfg_gregorianDateStyle
+    property alias cfg_hebrewEnabled: hebrewEnabled.checked
     property alias cfg_showHebrewDate: showHebrewDate.checked
     property alias cfg_hebrewDateWithYear: hebrewDateWithYear.checked
     property alias cfg_hebrewMonthFirst: hebrewMonthFirst.checked
     property alias cfg_monthLong: monthLong.checked
     property string cfg_cardOrder
 
-    readonly property var allBlocks: [
+    readonly property var standardBlocks: [
         { kind: "local-time",            label: i18n("Local time (HH:MM)") },
         { kind: "utc-time",              label: i18n("UTC time (HH:MM)") },
         { kind: "date-combined",         label: i18n("Date card (weekday + Apr 30 + Hebrew)") },
         { kind: "weekday",               label: i18n("Weekday (Thurs)") },
         { kind: "gregorian-date",        label: i18n("Gregorian date (Apr 30)") },
         { kind: "month",                 label: i18n("Month (April)") },
-        { kind: "day",                   label: i18n("Day of month (30)") },
+        { kind: "day",                   label: i18n("Day of month (30)") }
+    ]
+    readonly property var hebrewBlocks: [
         { kind: "hebrew-day-month",      label: i18n("Hebrew: 13 Iyyar") },
         { kind: "hebrew-day-month-year", label: i18n("Hebrew: 13 Iyyar 5786") },
         { kind: "hebrew-month-day",      label: i18n("Hebrew: Iyyar 13") },
@@ -32,6 +35,11 @@ ColumnLayout {
         { kind: "hebrew-month",          label: i18n("Hebrew month (Iyyar)") },
         { kind: "hebrew-year",           label: i18n("Hebrew year (5786)") }
     ]
+    readonly property var allBlocks: standardBlocks.concat(hebrewBlocks)
+
+    function isHebrewKind(kind) {
+        return kind.indexOf("hebrew") === 0;
+    }
 
     function labelFor(kind) {
         for (let i = 0; i < allBlocks.length; i++)
@@ -41,15 +49,18 @@ ColumnLayout {
 
     function rebuildModel() {
         blocksModel.clear();
+        const showHebrew = cfg_hebrewEnabled;
+        const pool = showHebrew ? allBlocks : standardBlocks;
         const order = (cfg_cardOrder || "").split(",").map(s => s.trim()).filter(s => s.length);
         const seen = {};
         for (const k of order) {
             if (seen[k]) continue;
+            if (!showHebrew && isHebrewKind(k)) continue;
             seen[k] = true;
-            if (allBlocks.some(b => b.kind === k))
+            if (pool.some(b => b.kind === k))
                 blocksModel.append({ kind: k, enabled: true });
         }
-        for (const b of allBlocks) {
+        for (const b of pool) {
             if (!seen[b.kind]) blocksModel.append({ kind: b.kind, enabled: false });
         }
     }
@@ -101,9 +112,15 @@ ColumnLayout {
 
         Item { Kirigami.FormData.isSection: true }
 
-        CheckBox { id: showHebrewDate; Kirigami.FormData.label: i18n("Inside date card:"); text: i18n("Include Hebrew date row") }
-        CheckBox { id: hebrewMonthFirst; text: i18n("Month first (Iyyar 13)") }
-        CheckBox { id: hebrewDateWithYear; text: i18n("Include Hebrew year") }
+        CheckBox {
+            id: hebrewEnabled
+            Kirigami.FormData.label: i18n("Hebrew calendar:")
+            text: i18n("Enable Hebrew date options")
+            onCheckedChanged: page.rebuildModel()
+        }
+        CheckBox { id: showHebrewDate; visible: hebrewEnabled.checked; Kirigami.FormData.label: i18n("Inside date card:"); text: i18n("Include Hebrew date row") }
+        CheckBox { id: hebrewMonthFirst; visible: hebrewEnabled.checked; text: i18n("Month first (Iyyar 13)") }
+        CheckBox { id: hebrewDateWithYear; visible: hebrewEnabled.checked; text: i18n("Include Hebrew year") }
     }
 
     Kirigami.Separator { Layout.fillWidth: true }
