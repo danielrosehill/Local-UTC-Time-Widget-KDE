@@ -8,7 +8,6 @@ ColumnLayout {
     spacing: Kirigami.Units.largeSpacing
 
     property string cfg_panelCardOrder
-    property bool cfg_hebrewEnabled
 
     readonly property var standardBlocks: [
         { kind: "local-time",            label: i18n("Local time (HH:MM)") },
@@ -40,11 +39,10 @@ ColumnLayout {
     BlockList {
         Layout.fillWidth: true
         title: i18n("Tray blocks")
-        subtitle: i18n("Compact blocks shown in the panel. Drag the ≡ handle to reorder.")
+        subtitle: i18n("Compact blocks shown in the panel. Drag the ≡ handle to reorder. Hebrew rows (italic, right-aligned) need the Hebrew Calendar page enabled to render.")
         orderString: cfg_panelCardOrder
         allBlocks: page.allBlocks
         hebrewBlocks: page.hebrewBlocks
-        hebrewEnabled: page.cfg_hebrewEnabled
         onOrderChanged: function (newOrder) { cfg_panelCardOrder = newOrder; }
     }
 }

@@ -284,12 +284,27 @@ PlasmoidItem {
                     Repeater {
                         model: panelItem.blocks
 
-                        delegate: ColumnLayout {
-                            id: panelBlock
-                            spacing: 0
+                        delegate: RowLayout {
+                            id: panelBlockRow
+                            spacing: Plasmoid.configuration.spacing
                             Layout.alignment: Qt.AlignVCenter
 
-                            readonly property string kind: modelData
+                            Rectangle {
+                                visible: index > 0 && Plasmoid.configuration.showDivider
+                                Layout.preferredWidth: 1
+                                Layout.fillHeight: true
+                                Layout.topMargin: 3
+                                Layout.bottomMargin: 3
+                                color: panelItem.lColor
+                                opacity: 0.3
+                            }
+
+                            ColumnLayout {
+                                id: panelBlock
+                                spacing: 0
+                                Layout.alignment: Qt.AlignVCenter
+
+                                readonly property string kind: modelData
                             readonly property bool isCombinedDate: kind === "date-combined"
                             readonly property bool isTimeBlock: kind === "local-time" || kind === "utc-time"
                             readonly property bool isHebrewMulti:
@@ -417,6 +432,7 @@ PlasmoidItem {
                                     font.pixelSize: panelItem.fsLabel
                                     font.weight: Font.Medium
                                 }
+                            }
                             }
                         }
                     }

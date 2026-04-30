@@ -13,7 +13,6 @@ ColumnLayout {
     property string orderString: ""
     property var allBlocks: []
     property var hebrewBlocks: []
-    property bool hebrewEnabled: false
 
     signal orderChanged(string newOrder)
 
@@ -33,17 +32,13 @@ ColumnLayout {
         blocksModel.clear();
         const order = (orderString || "").split(",").map(s => s.trim()).filter(s => s.length);
         const seen = {};
-        const pool = hebrewEnabled
-            ? allBlocks
-            : allBlocks.filter(b => !_isHebrewKind(b.kind));
         for (const k of order) {
             if (seen[k]) continue;
-            if (!hebrewEnabled && _isHebrewKind(k)) continue;
             seen[k] = true;
-            if (pool.some(b => b.kind === k))
+            if (allBlocks.some(b => b.kind === k))
                 blocksModel.append({ kind: k, enabled: true });
         }
-        for (const b of pool) {
+        for (const b of allBlocks) {
             if (!seen[b.kind]) blocksModel.append({ kind: b.kind, enabled: false });
         }
     }
@@ -59,7 +54,6 @@ ColumnLayout {
         root.orderChanged(joined);
     }
 
-    onHebrewEnabledChanged: rebuildModel()
     Component.onCompleted: rebuildModel()
 
     ListModel { id: blocksModel }

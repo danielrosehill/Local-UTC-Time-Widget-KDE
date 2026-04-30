@@ -86,11 +86,10 @@ ColumnLayout {
     BlockList {
         Layout.fillWidth: true
         title: i18n("Desktop blocks")
-        subtitle: i18n("Each enabled block is a separate card on the desktop. Drag the ≡ handle to reorder.")
+        subtitle: i18n("Each enabled block is a separate card on the desktop. Drag the ≡ handle to reorder. Hebrew rows (italic, right-aligned) need the Hebrew Calendar page enabled to render.")
         orderString: cfg_cardOrder
         allBlocks: page.allBlocks
         hebrewBlocks: page.hebrewBlocks
-        hebrewEnabled: page.cfg_hebrewEnabled
         onOrderChanged: function (newOrder) { cfg_cardOrder = newOrder; }
     }
 }
