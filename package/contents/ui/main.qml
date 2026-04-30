@@ -35,10 +35,14 @@ PlasmoidItem {
         return (Plasmoid.configuration.cardOrder || "").split(",")
             .map(s => s.trim()).filter(s => s.length);
     }
+    function parsePanelCardOrder() {
+        return (Plasmoid.configuration.panelCardOrder || "").split(",")
+            .map(s => s.trim()).filter(s => s.length);
+    }
     function needsHebrew() {
         if (Plasmoid.configuration.showHebrewDate) return true;
-        const order = parseCardOrder();
-        for (const k of order) if (k.indexOf("hebrew") === 0) return true;
+        const all = parseCardOrder().concat(parsePanelCardOrder());
+        for (const k of all) if (k.indexOf("hebrew") === 0) return true;
         return false;
     }
 
@@ -250,7 +254,7 @@ PlasmoidItem {
         sourceComponent: root.isDesktop ? desktopView : panelView
     }
 
-    // ---------- PANEL VIEW (compact, theme colors) ----------
+    // ---------- PANEL VIEW (compact, theme colors, driven by panelCardOrder) ----------
     Component {
         id: panelView
 
@@ -260,6 +264,7 @@ PlasmoidItem {
             readonly property int fsLabel: Math.max(8, fsTime - 4)
             readonly property color tColor: Kirigami.Theme.textColor
             readonly property color lColor: Qt.darker(tColor, 1.3)
+            readonly property var blocks: root.parsePanelCardOrder()
 
             Layout.minimumWidth: content.implicitWidth + Kirigami.Units.smallSpacing * 2
             Layout.minimumHeight: content.implicitHeight + Kirigami.Units.smallSpacing
@@ -276,141 +281,143 @@ PlasmoidItem {
                     Layout.alignment: Qt.AlignHCenter
                     layoutDirection: Plasmoid.configuration.localOnRight ? Qt.RightToLeft : Qt.LeftToRight
 
-                    // LOCAL block
-                    ColumnLayout {
-                        spacing: 0
-                        Layout.alignment: Qt.AlignVCenter
-                        RowLayout {
-                            spacing: 4
-                            Layout.alignment: Qt.AlignHCenter
-                            Text {
-                                text: fmtTime(nowLocal, false)
-                                color: panelItem.tColor
-                                font.family: root.fontFamily
-                                font.pixelSize: panelItem.fsTime
-                                font.bold: true
+                    Repeater {
+                        model: panelItem.blocks
+
+                        delegate: ColumnLayout {
+                            id: panelBlock
+                            spacing: 0
+                            Layout.alignment: Qt.AlignVCenter
+
+                            readonly property string kind: modelData
+                            readonly property bool isCombinedDate: kind === "date-combined"
+                            readonly property bool isTimeBlock: kind === "local-time" || kind === "utc-time"
+                            readonly property bool isHebrewMulti:
+                                   kind === "hebrew-day-month"
+                                || kind === "hebrew-day-month-year"
+                                || kind === "hebrew-month-day"
+                                || kind === "hebrew-month-day-year"
+                            readonly property bool weekdayTop: Plasmoid.configuration.dateBoxLayout !== "date-top"
+                            readonly property bool singleLineDate: Plasmoid.configuration.gregorianDateStyle === "single-line"
+                            readonly property var dbDate: Plasmoid.configuration.dateBoxUseUtc ? nowUtc : nowLocal
+                            readonly property bool dbUtc: Plasmoid.configuration.dateBoxUseUtc
+
+                            function primaryFor(k) {
+                                const d = root.activeDate();
+                                const utc = root.activeUtc();
+                                switch (k) {
+                                    case "local-time": return fmtTime(nowLocal, false);
+                                    case "utc-time": return fmtTime(nowUtc, true);
+                                    case "weekday": return dateBoxWeekday(d, utc);
+                                    case "gregorian-date":
+                                        return monthName(d, utc, Plasmoid.configuration.monthLong) + " " + dayOfMonth(d, utc);
+                                    case "month": return monthName(d, utc, Plasmoid.configuration.monthLong);
+                                    case "day": return dayOfMonth(d, utc);
+                                    case "hebrew-day": return root.hebrewParts.hd ? String(root.hebrewParts.hd) : "—";
+                                    case "hebrew-month": return root.hebrewParts.hm || "…";
+                                    case "hebrew-year": return root.hebrewParts.hy ? String(root.hebrewParts.hy) : "…";
+                                    case "hebrew-day-month":
+                                        return (root.hebrewParts.hd && root.hebrewParts.hm)
+                                            ? (root.hebrewParts.hd + " " + root.hebrewParts.hm) : "…";
+                                    case "hebrew-day-month-year":
+                                        return (root.hebrewParts.hd && root.hebrewParts.hm && root.hebrewParts.hy)
+                                            ? (root.hebrewParts.hd + " " + root.hebrewParts.hm + " " + root.hebrewParts.hy) : "…";
+                                    case "hebrew-month-day":
+                                        return (root.hebrewParts.hm && root.hebrewParts.hd)
+                                            ? (root.hebrewParts.hm + " " + root.hebrewParts.hd) : "…";
+                                    case "hebrew-month-day-year":
+                                        return (root.hebrewParts.hm && root.hebrewParts.hd && root.hebrewParts.hy)
+                                            ? (root.hebrewParts.hm + " " + root.hebrewParts.hd + " " + root.hebrewParts.hy) : "…";
+                                    default: return "";
+                                }
+                            }
+                            function labelFor(k) {
+                                if (k === "local-time")
+                                    return Plasmoid.configuration.autoLocalLabel ? localTzAbbrev() : Plasmoid.configuration.localLabel;
+                                if (k === "utc-time") return Plasmoid.configuration.utcLabel;
+                                return "";
+                            }
+
+                            // Standard time/date block: primary value, optional label below or inline
+                            RowLayout {
+                                visible: !panelBlock.isCombinedDate
+                                spacing: 4
+                                Layout.alignment: Qt.AlignHCenter
+                                Text {
+                                    text: panelBlock.primaryFor(panelBlock.kind)
+                                    color: panelItem.tColor
+                                    font.family: root.fontFamily
+                                    font.pixelSize: panelItem.fsTime
+                                    font.bold: true
+                                }
+                                Text {
+                                    visible: Plasmoid.configuration.showLabels && !labelsBelow && panelBlock.isTimeBlock
+                                    text: panelBlock.labelFor(panelBlock.kind)
+                                    color: panelItem.lColor
+                                    font.family: root.fontFamily
+                                    font.pixelSize: panelItem.fsLabel
+                                }
                             }
                             Text {
-                                visible: Plasmoid.configuration.showLabels && !labelsBelow
-                                text: Plasmoid.configuration.autoLocalLabel ? localTzAbbrev() : Plasmoid.configuration.localLabel
+                                visible: !panelBlock.isCombinedDate && Plasmoid.configuration.showLabels
+                                    && labelsBelow && panelBlock.isTimeBlock
+                                Layout.alignment: Qt.AlignHCenter
+                                text: {
+                                    const lbl = panelBlock.labelFor(panelBlock.kind);
+                                    if (panelBlock.kind === "local-time" && Plasmoid.configuration.showUtcOffset)
+                                        return lbl + " (" + utcOffsetString() + ")";
+                                    return lbl;
+                                }
                                 color: panelItem.lColor
                                 font.family: root.fontFamily
                                 font.pixelSize: panelItem.fsLabel
                             }
-                        }
-                        Text {
-                            visible: Plasmoid.configuration.showLabels && labelsBelow
-                            Layout.alignment: Qt.AlignHCenter
-                            text: {
-                                const lbl = Plasmoid.configuration.autoLocalLabel ? localTzAbbrev() : Plasmoid.configuration.localLabel;
-                                return Plasmoid.configuration.showUtcOffset ? lbl + " (" + utcOffsetString() + ")" : lbl;
+
+                            // Combined date block: weekday + date stacked, plus optional Hebrew row
+                            ColumnLayout {
+                                visible: panelBlock.isCombinedDate
+                                spacing: 0
+
+                                readonly property string wd: dateBoxWeekday(panelBlock.dbDate, panelBlock.dbUtc)
+                                readonly property string md: dateBoxMonthDay(panelBlock.dbDate, panelBlock.dbUtc)
+
+                                Text {
+                                    visible: panelBlock.singleLineDate
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: parent.wd + " " + parent.md
+                                    color: panelItem.tColor
+                                    font.family: root.fontFamily
+                                    font.pixelSize: panelItem.fsLabel
+                                    font.bold: true
+                                }
+                                Text {
+                                    visible: !panelBlock.singleLineDate
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: panelBlock.weekdayTop ? parent.wd : parent.md
+                                    color: panelItem.tColor
+                                    font.family: root.fontFamily
+                                    font.pixelSize: panelItem.fsLabel
+                                    font.bold: panelBlock.weekdayTop
+                                }
+                                Text {
+                                    visible: !panelBlock.singleLineDate
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: panelBlock.weekdayTop ? parent.md : parent.wd
+                                    color: panelItem.tColor
+                                    font.family: root.fontFamily
+                                    font.pixelSize: panelItem.fsLabel
+                                    font.bold: !panelBlock.weekdayTop
+                                }
+                                Text {
+                                    visible: Plasmoid.configuration.showHebrewDate && root.hebrewDateStr.length > 0
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: root.hebrewDateStr
+                                    color: panelItem.lColor
+                                    font.family: root.fontFamily
+                                    font.pixelSize: panelItem.fsLabel
+                                    font.weight: Font.Medium
+                                }
                             }
-                            color: panelItem.lColor
-                            font.family: root.fontFamily
-                            font.pixelSize: panelItem.fsLabel
-                        }
-                    }
-
-                    Rectangle {
-                        visible: Plasmoid.configuration.showDivider
-                        Layout.preferredWidth: 1
-                        Layout.fillHeight: true
-                        Layout.topMargin: 2
-                        Layout.bottomMargin: 2
-                        color: panelItem.lColor
-                        opacity: 0.35
-                    }
-
-                    // UTC block
-                    ColumnLayout {
-                        spacing: 0
-                        Layout.alignment: Qt.AlignVCenter
-                        RowLayout {
-                            spacing: 4
-                            Layout.alignment: Qt.AlignHCenter
-                            Text {
-                                text: fmtTime(nowUtc, true)
-                                color: panelItem.tColor
-                                font.family: root.fontFamily
-                                font.pixelSize: panelItem.fsTime
-                                font.bold: true
-                            }
-                            Text {
-                                visible: Plasmoid.configuration.showLabels && !labelsBelow
-                                text: Plasmoid.configuration.utcLabel
-                                color: panelItem.lColor
-                                font.family: root.fontFamily
-                                font.pixelSize: panelItem.fsLabel
-                            }
-                        }
-                        Text {
-                            visible: Plasmoid.configuration.showLabels && labelsBelow
-                            Layout.alignment: Qt.AlignHCenter
-                            text: Plasmoid.configuration.utcLabel
-                            color: panelItem.lColor
-                            font.family: root.fontFamily
-                            font.pixelSize: panelItem.fsLabel
-                        }
-                    }
-
-                    Rectangle {
-                        visible: Plasmoid.configuration.showDateBox && Plasmoid.configuration.showDivider
-                        Layout.preferredWidth: 1
-                        Layout.fillHeight: true
-                        Layout.topMargin: 2
-                        Layout.bottomMargin: 2
-                        color: panelItem.lColor
-                        opacity: 0.35
-                    }
-
-                    // Date box (panel)
-                    ColumnLayout {
-                        id: dateBoxPanel
-                        visible: Plasmoid.configuration.showDateBox
-                        spacing: 0
-                        Layout.alignment: Qt.AlignVCenter
-                        readonly property bool weekdayTop: Plasmoid.configuration.dateBoxLayout !== "date-top"
-                        readonly property var dbDate: Plasmoid.configuration.dateBoxUseUtc ? nowUtc : nowLocal
-                        readonly property bool dbUtc: Plasmoid.configuration.dateBoxUseUtc
-                        readonly property bool singleLine: Plasmoid.configuration.gregorianDateStyle === "single-line"
-                        readonly property string wd: dateBoxWeekday(dbDate, dbUtc)
-                        readonly property string md: dateBoxMonthDay(dbDate, dbUtc)
-
-                        Text {
-                            visible: dateBoxPanel.singleLine
-                            Layout.alignment: Qt.AlignHCenter
-                            text: dateBoxPanel.wd + " " + dateBoxPanel.md
-                            color: panelItem.tColor
-                            font.family: root.fontFamily
-                            font.pixelSize: panelItem.fsLabel
-                            font.bold: true
-                        }
-                        Text {
-                            visible: !dateBoxPanel.singleLine
-                            Layout.alignment: Qt.AlignHCenter
-                            text: dateBoxPanel.weekdayTop ? dateBoxPanel.wd : dateBoxPanel.md
-                            color: panelItem.tColor
-                            font.family: root.fontFamily
-                            font.pixelSize: panelItem.fsLabel
-                            font.bold: dateBoxPanel.weekdayTop
-                        }
-                        Text {
-                            visible: !dateBoxPanel.singleLine
-                            Layout.alignment: Qt.AlignHCenter
-                            text: dateBoxPanel.weekdayTop ? dateBoxPanel.md : dateBoxPanel.wd
-                            color: panelItem.tColor
-                            font.family: root.fontFamily
-                            font.pixelSize: panelItem.fsLabel
-                            font.bold: !dateBoxPanel.weekdayTop
-                        }
-                        Text {
-                            visible: root.needsHebrew() && root.hebrewDateStr.length > 0
-                            Layout.alignment: Qt.AlignHCenter
-                            text: root.hebrewDateStr
-                            color: panelItem.lColor
-                            font.family: root.fontFamily
-                            font.pixelSize: panelItem.fsLabel
-                            font.weight: Font.Medium
                         }
                     }
                 }

@@ -96,11 +96,12 @@
             <default>midnight</default>
         </entry>
         <entry name="cardOrder" type="String">
-            <!-- Comma-separated list of block kinds, in display order.
-                 Available: local-time, utc-time, date-combined,
-                 weekday, gregorian-date, month, day,
-                 hebrew-combined, hebrew-day, hebrew-month, hebrew-year -->
+            <!-- Desktop blocks (cards). Comma-separated list of block kinds, in display order. -->
             <default>local-time,utc-time,weekday,day,hebrew-day-month</default>
+        </entry>
+        <entry name="panelCardOrder" type="String">
+            <!-- System tray / panel blocks. Same kinds as cardOrder. -->
+            <default>local-time,utc-time,date-combined</default>
         </entry>
         <entry name="monthLong" type="Bool">
             <default>false</default>
