@@ -14,6 +14,10 @@ A modular Plasma 6 desktop widget that renders time, date, and (optionally) Hebr
 
 ![widget with hebrew card](screenshots/widget-with-hebrew.png)
 
+### In the system tray (with Hebrew block)
+
+![tray with hebrew](screenshots/tray-with-hebrew.png)
+
 ### Settings
 
 ![settings panel](screenshots/settings.png)
